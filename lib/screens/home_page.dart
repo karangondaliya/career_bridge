@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import '../utils/posting_helper.dart';
+import '../models/job_posting.dart';
 
 class HomePage extends StatefulWidget {
   final bool isLoggedIn;
@@ -31,7 +33,7 @@ class _HomePageState extends State<HomePage> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('CareerBridge'),
-        backgroundColor: Colors.blueAccent,
+        backgroundColor: Colors.lightBlueAccent,
         actions: [
           if (widget.isLoggedIn)
             Padding(
@@ -42,13 +44,13 @@ class _HomePageState extends State<HomePage> {
                     backgroundColor: Colors.white,
                     child: Text(
                       widget.userName != null ? widget.userName![0] : 'U',
-                      style: const TextStyle(color: Colors.blueAccent),
+                      style: TextStyle(color: Colors.lightBlueAccent),
                     ),
                   ),
-                  const SizedBox(width: 8),
-                  Text(widget.userName ?? 'User', style: const TextStyle(color: Colors.white)),
+                  SizedBox(width: 8),
+                  Text(widget.userName ?? 'User', style: TextStyle(color: Colors.white)),
                   IconButton(
-                    icon: const Icon(Icons.logout),
+                    icon: Icon(Icons.logout),
                     onPressed: _handleLogout,
                   ),
                 ],
@@ -57,184 +59,151 @@ class _HomePageState extends State<HomePage> {
         ],
       ),
       drawer: Drawer(
-        child: ListView(
-          padding: EdgeInsets.zero,
-          children: [
-            DrawerHeader(
-              decoration: const BoxDecoration(color: Colors.blueAccent),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  CircleAvatar(
-                    backgroundColor: Colors.white,
-                    child: Text(
-                      widget.userName != null ? widget.userName![0] : 'U',
-                      style: const TextStyle(color: Colors.blueAccent),
+        child: Container(
+          color: Colors.white,
+          child: ListView(
+            padding: EdgeInsets.zero,
+            children: [
+              DrawerHeader(
+                decoration: BoxDecoration(
+                  color: Colors.lightBlueAccent,
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    CircleAvatar(
+                      backgroundColor: Colors.white,
+                      child: Text(
+                        widget.userName != null ? widget.userName![0] : 'U',
+                        style: TextStyle(color: Colors.lightBlueAccent),
+                      ),
+                      radius: 30,
                     ),
-                    radius: 30,
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.only(top: 8.0),
-                    child: Text(
-                      widget.userName ?? 'User',
-                      style: const TextStyle(color: Colors.white, fontSize: 20),
+                    Padding(
+                      padding: const EdgeInsets.only(top: 8.0),
+                      child: Text(
+                        widget.userName ?? 'User',
+                        style: TextStyle(color: Colors.white, fontSize: 20),
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
-            ),
-            ListTile(
-              leading: const Icon(Icons.home),
-              title: const Text('Home'),
-              onTap: () {
+              _createDrawerItem(icon: Icons.home, text: 'Home', onTap: () {
                 Navigator.pushReplacementNamed(context, '/home');
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.work),
-              title: const Text('Jobs'),
-              onTap: () {
-                Navigator.pushNamed(context, '/jobs');
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.business),
-              title: const Text('Companies'),
-              onTap: () {
+              }),
+              _createDrawerItem(icon: Icons.work, text: 'Jobs', onTap: () {
+                Navigator.pushNamed(context, '/dashboard');
+              }),
+              _createDrawerItem(icon: Icons.business, text: 'Companies', onTap: () {
                 Navigator.pushNamed(context, '/companies');
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.message),
-              title: const Text('Messages'),
-              onTap: () {
+              }),
+              _createDrawerItem(icon: Icons.message, text: 'Messages', onTap: () {
                 Navigator.pushNamed(context, '/messages');
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.settings),
-              title: const Text('Settings'),
-              onTap: () {
+              }),
+              _createDrawerItem(icon: Icons.settings, text: 'Settings', onTap: () {
                 Navigator.pushNamed(context, '/settings');
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.logout),
-              title: const Text('Log Out'),
-              onTap: _handleLogout,
-            ),
-          ],
+              }),
+              _createDrawerItem(icon: Icons.logout, text: 'Log Out', onTap: _handleLogout),
+            ],
+          ),
         ),
       ),
-      body: SingleChildScrollView(
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'Welcome, ${widget.userName ?? 'User'}!',
-                style: const TextStyle(
-                  fontSize: 32,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.blueAccent,
+      body: Container(
+        color: Colors.grey[100],
+        child: SingleChildScrollView(
+          child: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Welcome, ${widget.userName ?? 'User'}!',
+                  style: TextStyle(
+                    fontSize: 32,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.lightBlueAccent,
+                  ),
                 ),
-              ),
-              const SizedBox(height: 16),
-              const Text(
-                'Explore the best opportunities and connect with top companies.',
-                style: TextStyle(
-                  fontSize: 18,
-                  color: Colors.black54,
+                SizedBox(height: 16),
+                Text(
+                  'Explore the best opportunities and connect with top companies.',
+                  style: TextStyle(
+                    fontSize: 18,
+                    color: Colors.black54,
+                  ),
                 ),
-              ),
-              const SizedBox(height: 24),
-              ElevatedButton(
-                onPressed: () {
-                  Navigator.pushNamed(context, '/jobs');
-                },
-                child: const Text('Browse Jobs'),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.blueAccent,
-                  padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 24),
-                  textStyle: const TextStyle(fontSize: 16),
+                SizedBox(height: 24),
+                _createElevatedButton(
+                  text: 'Browse Jobs',
+                  onPressed: () {
+                    Navigator.pushNamed(context, '/jobs');
+                  },
                 ),
-              ),
-              const SizedBox(height: 16),
-              ElevatedButton(
-                onPressed: () {
-                  Navigator.pushNamed(context, '/companies');
-                },
-                child: const Text('Explore Companies'),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.blueAccent,
-                  padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 24),
-                  textStyle: const TextStyle(fontSize: 16),
+                SizedBox(height: 16),
+                _createElevatedButton(
+                  text: 'Explore Companies',
+                  onPressed: () {
+                    Navigator.pushNamed(context, '/companies');
+                  },
                 ),
-              ),
-              const SizedBox(height: 24),
-              const Text(
-                'Featured Companies',
-                style: TextStyle(
-                  fontSize: 24,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.blueAccent,
+                SizedBox(height: 24),
+                Text(
+                  'Latest Jobs',
+                  style: TextStyle(
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.lightBlueAccent,
+                  ),
                 ),
-              ),
-              const SizedBox(height: 16),
-              const CompanyCard(companyName: 'Google', location: 'Mountain View, CA'),
-              const CompanyCard(companyName: 'Amazon', location: 'Seattle, WA'),
-              const CompanyCard(companyName: 'Microsoft', location: 'Redmond, WA'),
-              const CompanyCard(companyName: 'Facebook', location: 'Menlo Park, CA'),
-              const SizedBox(height: 24),
-              const Text(
-                'Latest Jobs',
-                style: TextStyle(
-                  fontSize: 24,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.blueAccent,
+                SizedBox(height: 16),
+                FutureBuilder<List<JobPosting>>(
+                  future: PostingHelper().getJobPostings(),
+                  builder: (context, snapshot) {
+                    if (snapshot.connectionState == ConnectionState.waiting) {
+                      return Center(child: CircularProgressIndicator());
+                    } else if (snapshot.hasError) {
+                      return Center(child: Text('Error: ${snapshot.error}'));
+                    } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                      return Center(child: Text('No job postings available.'));
+                    } else {
+                      final jobs = snapshot.data!;
+                      return Column(
+                        children: jobs.map((job) => JobCard(
+                          jobTitle: job.jobTitle,
+                          company: job.requirements, // Assuming this field is used for company name
+                          location: job.salary, // Assuming this field is used for location
+                        )).toList(),
+                      );
+                    }
+                  },
                 ),
-              ),
-              const SizedBox(height: 16),
-              const JobCard(jobTitle: 'Software Engineer', company: 'Google', location: 'Remote'),
-              const JobCard(jobTitle: 'Product Manager', company: 'Amazon', location: 'On-site'),
-              const JobCard(jobTitle: 'UX Designer', company: 'Facebook', location: 'Hybrid'),
-            ],
+              ],
+            ),
           ),
         ),
       ),
     );
   }
-}
 
-class CompanyCard extends StatelessWidget {
-  final String companyName;
-  final String location;
+  ListTile _createDrawerItem({required IconData icon, required String text, required VoidCallback onTap}) {
+    return ListTile(
+      leading: Icon(icon, color: Colors.lightBlueAccent),
+      title: Text(text),
+      onTap: onTap,
+    );
+  }
 
-  const CompanyCard({Key? key, required this.companyName, required this.location}) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return Card(
-      margin: const EdgeInsets.only(bottom: 16),
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Row(
-          children: [
-            const Icon(Icons.business, size: 40, color: Colors.blueAccent),
-            const SizedBox(width: 16),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  companyName,
-                  style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-                ),
-                Text(location, style: const TextStyle(color: Colors.black54)),
-              ],
-            ),
-          ],
-        ),
+  ElevatedButton _createElevatedButton({required String text, required VoidCallback onPressed}) {
+    return ElevatedButton(
+      onPressed: onPressed,
+      child: Text(text),
+      style: ElevatedButton.styleFrom(
+        backgroundColor: Colors.lightBlueAccent,
+        padding: EdgeInsets.symmetric(vertical: 12, horizontal: 24),
+        textStyle: TextStyle(fontSize: 16),
+        shadowColor: Colors.blueGrey[300],
+        elevation: 5,
       ),
     );
   }
@@ -251,9 +220,14 @@ class JobCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Card(
       margin: const EdgeInsets.only(bottom: 16),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+        side: BorderSide(color: Colors.lightBlueAccent, width: 1),
+      ),
+      elevation: 8,
       child: ListTile(
-        leading: const Icon(Icons.work, color: Colors.blueAccent),
-        title: Text(jobTitle, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+        leading: Icon(Icons.work, color: Colors.lightBlueAccent),
+        title: Text(jobTitle, style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
         subtitle: Text('$company - $location'),
         onTap: () {
           // Handle job detail navigation

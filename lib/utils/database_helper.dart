@@ -4,7 +4,9 @@ import '../models/user.dart';
 
 class DatabaseHelper {
   static final DatabaseHelper _instance = DatabaseHelper._internal();
+
   factory DatabaseHelper() => _instance;
+
   DatabaseHelper._internal();
 
   static Database? _database;

@@ -48,6 +48,15 @@ class _RegistrationPageState extends State<RegistrationPage> {
         return;
       }
 
+      // Check if the email already exists in the database
+      final existingUser = await _dbHelper.getUserByEmail(_emailController.text);
+      if (existingUser != null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('This email is already in use. Please try a different email.')),
+        );
+        return;
+      }
+
       final user = User(
         email: _emailController.text,
         password: _hashPassword(_passwordController.text),

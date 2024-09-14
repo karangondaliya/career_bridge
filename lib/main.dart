@@ -1,5 +1,6 @@
-import 'package:career_bridge/screens/profile_page.dart';
+import 'package:career_bridge/not%20use%20page/profile_page.dart';
 import 'package:flutter/material.dart';
+import 'not use page/job_applications_page.dart';
 import 'screens/login_page.dart';
 import 'screens/registration_page.dart';
 import 'screens/user_profile_page.dart';
@@ -34,6 +35,7 @@ class CareerBridgeApp extends StatelessWidget {
             userEmail: args?['userEmail'] ?? 'User',
           );
         },
+        '/jobs': (context) => JobApplicationsPage(),
         '/login': (context) => const LoginPage(),
         '/registration': (context) => const RegistrationPage(),
         '/profile': (context) {

@@ -1,12 +1,10 @@
 import 'dart:convert';
-
 import 'package:crypto/crypto.dart';
 import 'package:flutter/material.dart';
 import '../models/user.dart';
 import '../utils/database_helper.dart';
 import 'home_page.dart';
 import 'job_provider_dashboard.dart';
-
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -39,18 +37,25 @@ class _LoginPageState extends State<LoginPage> {
         final user = await _dbHelper.getUserByEmail(email);
 
         if (user != null) {
-          if (user.role == 'Job Provider') {
-            Navigator.pushReplacement(
-              context,
+          if (user.password == hashedPassword) {
+            if (user.role == 'Job Provider') {
+              Navigator.pushReplacement(
+                context,
                 MaterialPageRoute(
                   builder: (context) => JobProviderDashboard(providerEmail: user.email),
                 ),
-            );
+              );
+            } else {
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => HomePage(isLoggedIn: true, userEmail: email),
+                ),
+              );
+            }
           } else {
-            // Pass the email to HomePage here
-            Navigator.pushReplacement(
-              context,
-              MaterialPageRoute(builder: (context) => HomePage(isLoggedIn: true, userEmail: email)),
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('Invalid email or password')),
             );
           }
         } else {

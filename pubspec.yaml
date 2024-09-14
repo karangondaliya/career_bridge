@@ -30,7 +30,11 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+
   image_picker: ^0.8.6+3
+  file_picker: ^5.2.0
+  open_file: ^3.2.1
+  url_launcher: ^6.1.5
   crypto: ^3.0.1
   sqflite: ^2.0.0+4
   path: ^1.8.0

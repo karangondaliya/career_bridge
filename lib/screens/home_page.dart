@@ -1,6 +1,9 @@
+
 import 'package:flutter/material.dart';
 import '../utils/posting_helper.dart';
 import '../models/job_posting.dart';
+import '../models/job_detail_dialog.dart';
+import '../models/job_card.dart';
 
 class HomePage extends StatefulWidget {
   final bool isLoggedIn;
@@ -16,7 +19,6 @@ class _HomePageState extends State<HomePage> {
   @override
   void initState() {
     super.initState();
-    // Redirect to login page if not logged in
     if (!widget.isLoggedIn) {
       Future.delayed(Duration.zero, () {
         Navigator.pushReplacementNamed(context, '/login');
@@ -33,11 +35,10 @@ class _HomePageState extends State<HomePage> {
       context,
       '/profile',
       arguments: {
-        'email': widget.userEmail, // Passing the email to the profile page
+        'email': widget.userEmail,
       },
     );
   }
-
 
   @override
   Widget build(BuildContext context) {
@@ -51,8 +52,8 @@ class _HomePageState extends State<HomePage> {
           if (widget.isLoggedIn)
             Padding(
               padding: const EdgeInsets.all(8.0),
-              child: InkWell( // Make the user logo and email clickable
-                onTap: _navigateToProfile, // Navigate to profile page
+              child: InkWell(
+                onTap: _navigateToProfile,
                 child: Row(
                   children: [
                     CircleAvatar(
@@ -88,7 +89,7 @@ class _HomePageState extends State<HomePage> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     InkWell(
-                      onTap: _navigateToProfile, // Navigate to profile when clicking on avatar
+                      onTap: _navigateToProfile,
                       child: CircleAvatar(
                         backgroundColor: Colors.white,
                         child: Text(
@@ -101,7 +102,7 @@ class _HomePageState extends State<HomePage> {
                     Padding(
                       padding: const EdgeInsets.only(top: 8.0),
                       child: InkWell(
-                        onTap: _navigateToProfile, // Navigate to profile when clicking on email
+                        onTap: _navigateToProfile,
                         child: Text(
                           widget.userEmail ?? 'User',
                           style: const TextStyle(color: Colors.white, fontSize: 20),
@@ -207,13 +208,16 @@ class _HomePageState extends State<HomePage> {
                     } else {
                       final jobs = snapshot.data!;
                       return Column(
-                        children: jobs
-                            .map((job) => JobCard(
+                        children: jobs.map((job) => JobCard(
                           jobTitle: job.jobTitle,
                           company: job.requirements, // Assuming this field is used for company name
                           location: job.salary, // Assuming this field is used for location
-                        ))
-                            .toList(),
+                          jobDescription: job.jobDescription,
+                          requirements: job.requirements,
+                          salary: job.salary,
+                          datePosted: job.datePosted,
+                          providerEmail: job.providerEmail,
+                        )).toList(),
                       );
                     }
                   },
@@ -226,8 +230,7 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  ListTile _createDrawerItem(
-      {required IconData icon, required String text, required VoidCallback onTap}) {
+  ListTile _createDrawerItem({required IconData icon, required String text, required VoidCallback onTap}) {
     return ListTile(
       leading: Icon(icon, color: Colors.lightBlueAccent),
       title: Text(text),
@@ -245,40 +248,6 @@ class _HomePageState extends State<HomePage> {
         textStyle: const TextStyle(fontSize: 16),
         shadowColor: Colors.blueGrey[300],
         elevation: 5,
-      ),
-    );
-  }
-}
-
-// Define the JobCard widget
-class JobCard extends StatelessWidget {
-  final String jobTitle;
-  final String company;
-  final String location;
-
-  const JobCard({
-    Key? key,
-    required this.jobTitle,
-    required this.company,
-    required this.location,
-  }) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return Card(
-      margin: const EdgeInsets.only(bottom: 16),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
-        side: const BorderSide(color: Colors.lightBlueAccent, width: 1),
-      ),
-      elevation: 8,
-      child: ListTile(
-        leading: const Icon(Icons.work, color: Colors.lightBlueAccent),
-        title: Text(jobTitle, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-        subtitle: Text('$company - $location'),
-        onTap: () {
-          // Handle job detail navigation
-        },
       ),
     );
   }

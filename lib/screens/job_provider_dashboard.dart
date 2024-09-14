@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../models/job_posting.dart';
+import '../not use page/application_form.dart';
 import '../utils/posting_helper.dart';
 import 'create_job_posting_form.dart';
 
@@ -168,9 +169,14 @@ class JobProviderDashboard extends StatelessWidget {
           ),
           ListTile(
             leading: Icon(Icons.work),
-            title: Text('My Jobs'),
+            title: Text('Job Application'),
             onTap: () {
-              Navigator.pushNamed(context, '/dashboard');
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => JobApplicationsPage(providerEmail: providerEmail),
+                ),
+              );
             },
           ),
           ListTile(

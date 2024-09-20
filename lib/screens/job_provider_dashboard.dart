@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import '../models/job_posting.dart';
-import '../not use page/application_form.dart';
+
 import '../utils/posting_helper.dart';
 import 'create_job_posting_form.dart';
+import 'job_provider/job_applications_page.dart';
 
 class JobProviderDashboard extends StatelessWidget {
   final String providerEmail; // Accept provider email as a parameter

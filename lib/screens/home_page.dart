@@ -4,6 +4,7 @@ import '../utils/posting_helper.dart';
 import '../models/job_posting.dart';
 import '../models/job_detail_dialog.dart';
 import '../models/job_card.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class HomePage extends StatefulWidget {
   final bool isLoggedIn;
@@ -39,6 +40,19 @@ class _HomePageState extends State<HomePage> {
       },
     );
   }
+
+  Future<void> _launchURL() async {
+    const url = 'https://www.myperfectresume.com/resume/ats-resume-checker';
+    final Uri uri = Uri.parse(url);
+    if (await canLaunchUrl(uri)) {
+      await launchUrl(uri, mode: LaunchMode.externalApplication); // Ensures it opens in a browser
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Could not launch $url')),
+      );
+    }
+  }
+
 
   @override
   Widget build(BuildContext context) {
@@ -126,15 +140,15 @@ class _HomePageState extends State<HomePage> {
                   }),
               _createDrawerItem(
                   icon: Icons.business,
-                  text: 'Companies',
+                  text: 'Skill Test',
                   onTap: () {
-                    Navigator.pushNamed(context, '/companies');
+                    Navigator.pushNamed(context, '/skill_test');
                   }),
               _createDrawerItem(
                   icon: Icons.message,
-                  text: 'Messages',
+                  text: 'Profile',
                   onTap: () {
-                    Navigator.pushNamed(context, '/messages');
+                    Navigator.pushNamed(context, '/profile_pic');
                   }),
               _createDrawerItem(
                   icon: Icons.settings,
@@ -180,11 +194,16 @@ class _HomePageState extends State<HomePage> {
                   },
                 ),
                 const SizedBox(height: 16),
-                _createElevatedButton(
-                  text: 'Explore Companies',
-                  onPressed: () {
-                    Navigator.pushNamed(context, '/companies');
-                  },
+                ElevatedButton(
+                  onPressed: _launchURL,
+                  child: Text('ATS Resume Scanner'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.lightBlueAccent,
+                    padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 24),
+                    textStyle: const TextStyle(fontSize: 16),
+                    shadowColor: Colors.blueGrey[300],
+                    elevation: 5,
+                  ),
                 ),
                 const SizedBox(height: 24),
                 const Text(

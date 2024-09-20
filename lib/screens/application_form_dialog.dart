@@ -126,10 +126,10 @@ class _ApplicationFormDialogState extends State<ApplicationFormDialog> {
                       });
                     },
                   ),
-                  const Expanded(
+                  Expanded( // Wrap the Text widget with Expanded to prevent overflow
                     child: Text(
                       'I agree to the terms and conditions and consent to store my information',
-                      softWrap: true,
+                      softWrap: true, // Ensures text wraps to the next line
                     ),
                   ),
                 ],

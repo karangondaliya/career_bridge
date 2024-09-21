@@ -1,6 +1,8 @@
 import 'package:career_bridge/not%20use%20page/profile_page.dart';
+import 'package:career_bridge/screens/job_seeker/message_view_page.dart';
 import 'package:career_bridge/screens/job_seeker/skill_test_page.dart';
 import 'package:flutter/material.dart';
+import 'not use page/image_see.dart';
 import 'screens/job_provider/job_applications_page.dart';
 import 'screens/login_page.dart';
 import 'screens/registration_page.dart';
@@ -41,8 +43,11 @@ class CareerBridgeApp extends StatelessWidget {
           final providerEmail = ModalRoute.of(context)?.settings.arguments as String? ?? '';
           return JobApplicationsPage(providerEmail: providerEmail);  // Pass the extracted or empty email
         },
+
+        '/img' :  (context) => ImageSeePage(),
+        '/message_view' :  (context) => MessageViewPage(userEmail: '',),
         '/skill_test' :  (context) => SkillTestPage(),
-    '/profile_pic' :  (context) => const ProfilePage(),
+        '/profile_pic' :  (context) => const ProfilePage(),
         '/login': (context) => const LoginPage(),
         '/registration': (context) => const RegistrationPage(),
         '/profile': (context) {

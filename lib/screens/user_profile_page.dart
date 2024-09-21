@@ -1,9 +1,13 @@
+import 'dart:typed_data';
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 import '../models/user.dart';
+import '../models/user_profile_image.dart';
 import '../utils/database_helper.dart';
+import '../utils/profile_image_helper.dart';
 
 class UserProfilePage extends StatefulWidget {
-  final String email; // Pass email as a parameter
+  final String email;
 
   const UserProfilePage({required this.email, super.key});
 
@@ -16,13 +20,14 @@ class _UserProfilePageState extends State<UserProfilePage> {
   late TextEditingController _emailController;
   late TextEditingController _phoneController;
 
-  bool _isEditing = false; // View and edit modes
+  bool _isEditing = false;
   late Future<User?> _userFuture;
+  late Future<UserProfileImage?> _profileImageFuture;
 
-  // Variables to store password, username, and role
   String? _password;
   String? _username;
   String? _role;
+  Uint8List? _profileImageData;
 
   @override
   void initState() {
@@ -32,8 +37,8 @@ class _UserProfilePageState extends State<UserProfilePage> {
     _emailController = TextEditingController();
     _phoneController = TextEditingController();
 
-    // Fetch user data when the widget is initialized
     _userFuture = _fetchUser();
+    _profileImageFuture = _fetchProfileImage();
   }
 
   @override
@@ -44,13 +49,11 @@ class _UserProfilePageState extends State<UserProfilePage> {
     super.dispose();
   }
 
-  // Fetch user data from the database
   Future<User?> _fetchUser() async {
     final dbHelper = DatabaseHelper();
     final user = await dbHelper.getUserByEmail(widget.email);
 
     if (user != null) {
-      // Populate the controllers and store additional user info
       _nameController.text = user.name;
       _emailController.text = user.email;
       _phoneController.text = user.phone;
@@ -62,11 +65,28 @@ class _UserProfilePageState extends State<UserProfilePage> {
     return user;
   }
 
-  // Update the user's data
+  Future<UserProfileImage?> _fetchProfileImage() async {
+    final profileImage = await ProfileImageHelper.instance.getProfileImageByEmail(widget.email);
+    if (profileImage != null) {
+      setState(() {
+        _profileImageData = profileImage.imageData; // Store image data
+      });
+    }
+    return profileImage;
+  }
+
+  Future<void> _pickImage(ImageSource source) async {
+    final pickedFile = await ImagePicker().pickImage(source: source);
+    if (pickedFile != null) {
+      final bytes = await pickedFile.readAsBytes();
+      setState(() {
+        _profileImageData = bytes; // Store the image data as bytes
+      });
+    }
+  }
+
   Future<void> _updateUser() async {
     final dbHelper = DatabaseHelper();
-
-    // Fetch the existing user to ensure current data is available
     final user = await dbHelper.getUserByEmail(widget.email);
 
     if (user != null) {
@@ -74,21 +94,25 @@ class _UserProfilePageState extends State<UserProfilePage> {
         name: _nameController.text,
         email: _emailController.text,
         phone: _phoneController.text,
-        password: _password ?? user.password, // Retain original password
-        username: _username ?? user.username, // Retain original username
-        role: _role ?? user.role,             // Retain original role
+        password: _password ?? user.password,
+        username: _username ?? user.username,
+        role: _role ?? user.role,
       );
 
       try {
         await dbHelper.updateUser(updatedUser);
+        if (_profileImageData != null) {
+          await ProfileImageHelper.instance.insertProfileImage(
+            UserProfileImage(email: widget.email, imageData: _profileImageData!),
+          );
+        }
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Profile updated successfully!')),
         );
         setState(() {
-          _isEditing = false; // Switch back to view mode after update
+          _isEditing = false;
         });
       } catch (e) {
-        print("Error updating user: $e");
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Error updating profile: $e')),
         );
@@ -96,46 +120,31 @@ class _UserProfilePageState extends State<UserProfilePage> {
     }
   }
 
-  // Delete the user from the database
-  Future<void> _deleteUser() async {
-    final dbHelper = DatabaseHelper();
-    try {
-      await dbHelper.deleteUserByEmail(widget.email);
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Profile deleted successfully!')),
-      );
-      Navigator.pushReplacementNamed(context, '/login'); // Redirect to login page
-    } catch (e) {
-      print("Error deleting user: $e");
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error deleting profile: $e')),
-      );
-    }
-  }
-
-  // Confirm deletion with an AlertDialog
-  void _confirmDelete() {
-    showDialog(
+  void _showImagePicker(BuildContext context) {
+    showModalBottomSheet(
       context: context,
       builder: (BuildContext context) {
-        return AlertDialog(
-          title: const Text('Confirm Deletion'),
-          content: const Text('Are you sure you want to delete your profile? This action cannot be undone.'),
-          actions: [
-            TextButton(
-              child: const Text('Cancel'),
-              onPressed: () {
-                Navigator.of(context).pop(); // Close the dialog
-              },
-            ),
-            TextButton(
-              child: const Text('Delete'),
-              onPressed: () {
-                Navigator.of(context).pop(); // Close the dialog
-                _deleteUser(); // Proceed with deletion
-              },
-            ),
-          ],
+        return SafeArea(
+          child: Wrap(
+            children: <Widget>[
+              ListTile(
+                leading: const Icon(Icons.photo_library),
+                title: const Text('Choose from Gallery'),
+                onTap: () {
+                  _pickImage(ImageSource.gallery);
+                  Navigator.of(context).pop();
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.photo_camera),
+                title: const Text('Take a Photo'),
+                onTap: () {
+                  _pickImage(ImageSource.camera);
+                  Navigator.of(context).pop();
+                },
+              ),
+            ],
+          ),
         );
       },
     );
@@ -152,23 +161,24 @@ class _UserProfilePageState extends State<UserProfilePage> {
               icon: const Icon(Icons.edit),
               onPressed: () {
                 setState(() {
-                  _isEditing = true; // Enable editing mode
+                  _isEditing = true;
                 });
               },
             ),
           if (_isEditing)
             IconButton(
               icon: const Icon(Icons.save),
-              onPressed: _updateUser, // Save updated data
+              onPressed: _updateUser,
             ),
           if (_isEditing)
             IconButton(
               icon: const Icon(Icons.cancel),
               onPressed: () {
                 setState(() {
-                  _isEditing = false; // Cancel editing
+                  _isEditing = false;
                 });
-                _fetchUser(); // Refresh data to discard unsaved changes
+                _fetchUser();
+                _fetchProfileImage(); // Refresh image
               },
             ),
         ],
@@ -199,13 +209,29 @@ class _UserProfilePageState extends State<UserProfilePage> {
                   style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
                 ),
                 const SizedBox(height: 32),
+                GestureDetector(
+                  onTap: () {
+                    _showImagePicker(context);
+                  },
+                  child: CircleAvatar(
+                    radius: 60,
+                    backgroundColor: Colors.grey.shade200,
+                    backgroundImage: _profileImageData != null
+                        ? MemoryImage(_profileImageData!)
+                        : null,
+                    child: _profileImageData == null
+                        ? const Icon(Icons.camera_alt, size: 40, color: Colors.grey)
+                        : null,
+                  ),
+                ),
+                const SizedBox(height: 16),
                 TextField(
                   controller: _nameController,
                   decoration: const InputDecoration(
                     border: OutlineInputBorder(),
                     labelText: 'Full Name',
                   ),
-                  readOnly: !_isEditing, // Toggle editability
+                  readOnly: !_isEditing,
                 ),
                 const SizedBox(height: 16),
                 TextField(
@@ -214,7 +240,7 @@ class _UserProfilePageState extends State<UserProfilePage> {
                     border: OutlineInputBorder(),
                     labelText: 'Email',
                   ),
-                  readOnly: !_isEditing, // Toggle editability
+                  readOnly: !_isEditing,
                 ),
                 const SizedBox(height: 16),
                 TextField(
@@ -223,17 +249,16 @@ class _UserProfilePageState extends State<UserProfilePage> {
                     border: OutlineInputBorder(),
                     labelText: 'Phone Number',
                   ),
-                  readOnly: !_isEditing, // Toggle editability
+                  readOnly: !_isEditing,
                 ),
                 const SizedBox(height: 32),
-
-                if (!_isEditing) // Red "Delete Profile" button when not editing
-                  const SizedBox(height: 16), // Add space before the button
                 if (!_isEditing)
                   ElevatedButton(
-                    onPressed: _confirmDelete, // Show delete confirmation dialog
+                    onPressed: () {
+                      // Logic to delete the profile
+                    },
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.red, // Set button color to red
+                      backgroundColor: Colors.red,
                       padding: const EdgeInsets.symmetric(vertical: 16.0),
                     ),
                     child: const Text('Delete Profile'),

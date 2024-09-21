@@ -194,6 +194,8 @@ class JobProviderDashboard extends StatelessWidget {
             leading: Icon(Icons.settings),
             title: Text('Settings'),
             onTap: () {
+              Navigator.pushNamed(context, '/');
+
               // Implement Settings Page navigation
             },
           ),

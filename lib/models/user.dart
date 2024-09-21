@@ -42,4 +42,6 @@ class User {
       role: map['role'],
     );
   }
+
+
 }

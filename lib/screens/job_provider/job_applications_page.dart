@@ -2,17 +2,18 @@ import 'package:flutter/material.dart';
 import 'package:open_file/open_file.dart';
 import '../../utils/application_helper.dart';
 import '../../models/job_application.dart';
+import 'send_message_page.dart'; // Import the new message page
 
 class JobApplicationsPage extends StatefulWidget {
-  final String providerEmail; // Add this to accept email
+  final String providerEmail;
 
-  JobApplicationsPage({required this.providerEmail}); // Constructor accepting email
+  JobApplicationsPage({required this.providerEmail});
 
   @override
   _JobApplicationsPageState createState() => _JobApplicationsPageState();
 }
 
-// This is a must in the code
+// Enum for result type
 enum ResultType {
   done,
   error,
@@ -25,7 +26,6 @@ class _JobApplicationsPageState extends State<JobApplicationsPage> {
   @override
   void initState() {
     super.initState();
-    // Pass the email to fetch only the relevant applications
     _jobApplications = _fetchJobApplications(widget.providerEmail);
   }
 
@@ -33,7 +33,7 @@ class _JobApplicationsPageState extends State<JobApplicationsPage> {
     final applicationHelper = ApplicationHelper.instance;
     final allApplications = await applicationHelper.getAllJobApplications();
 
-    // Filter applications by provider email
+    // Filter by job provider's email
     return allApplications.where((application) => application.jobProviderEmail == providerEmail).toList();
   }
 
@@ -44,6 +44,19 @@ class _JobApplicationsPageState extends State<JobApplicationsPage> {
         SnackBar(content: Text('Failed to open file: ${result.message}')),
       );
     }
+  }
+
+  // Function to show the SendMessage popup
+  void _showSendMessagePopup(String jobSeekerEmail) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return SendMessagePage(
+          jobSeekerEmail: jobSeekerEmail,
+          providerEmail: widget.providerEmail,
+        );
+      },
+    );
   }
 
   @override
@@ -60,10 +73,15 @@ class _JobApplicationsPageState extends State<JobApplicationsPage> {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return Center(child: CircularProgressIndicator(color: Colors.deepPurple));
           } else if (snapshot.hasError) {
-            return Center(child: Text('Error: ${snapshot.error}', style: TextStyle(color: Colors.red, fontSize: 16)));
+            return Center(
+              child: Text('Error: ${snapshot.error}', style: TextStyle(color: Colors.red, fontSize: 16)),
+            );
           } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
             return Center(
-              child: Text('No job applications found for ${widget.providerEmail}.', style: TextStyle(fontSize: 18, color: Colors.grey)),
+              child: Text(
+                'No job applications found for ${widget.providerEmail}.',
+                style: TextStyle(fontSize: 18, color: Colors.grey),
+              ),
             );
           } else {
             final jobApplications = snapshot.data!;
@@ -97,12 +115,12 @@ class _JobApplicationsPageState extends State<JobApplicationsPage> {
                         ),
                         Divider(thickness: 1, height: 20),
 
-                        // Name and Contact Information
+                        // Name and contact details
                         _buildInfoRow(Icons.person, 'Full Name', application.fullName),
                         _buildInfoRow(Icons.email, 'Email', application.email),
                         _buildInfoRow(Icons.phone, 'Phone', application.phone),
 
-                        // Resume and Opening Button
+                        // Resume and button to open it
                         Padding(
                           padding: const EdgeInsets.symmetric(vertical: 8.0),
                           child: GestureDetector(
@@ -127,12 +145,26 @@ class _JobApplicationsPageState extends State<JobApplicationsPage> {
                           ),
                         ),
 
-                        // Education, Skills and Other Details
+                        // Education, work experience, and other details
                         _buildInfoRow(Icons.school, 'Education Level', application.educationLevel),
                         _buildInfoRow(Icons.work, 'Work Experience', application.workExperience),
                         _buildInfoRow(Icons.star, 'Skills', application.skills),
                         _buildInfoRow(Icons.check_circle_outline, 'Consent Given', application.consentGiven == 1 ? 'Yes' : 'No'),
                         _buildInfoRow(Icons.email_outlined, 'Job Provider Email', application.jobProviderEmail),
+
+                        // Send message button
+                        Padding(
+                          padding: const EdgeInsets.only(top: 16.0),
+                          child: ElevatedButton(
+                            onPressed: () {
+                              _showSendMessagePopup(application.email); // Open message popup
+                            },
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.white, // Button color
+                            ),
+                            child: Text('Send Message'),
+                          ),
+                        ),
                       ],
                     ),
                   ),
@@ -145,7 +177,7 @@ class _JobApplicationsPageState extends State<JobApplicationsPage> {
     );
   }
 
-  // Helper method to build rows for the job application details
+  // Helper method to build rows for application details
   Widget _buildInfoRow(IconData icon, String label, String value) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 4.0),

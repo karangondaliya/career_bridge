@@ -3,6 +3,8 @@ import 'package:file_picker/file_picker.dart';
 import 'package:open_file/open_file.dart';
 import '../utils/application_helper.dart';
 import '../models/job_application.dart';
+import '../utils/database_helper.dart';
+import 'job_provider/job_applications_page.dart'; // Import your DatabaseHelper
 
 class ApplicationFormDialog extends StatefulWidget {
   final String jobTitle;
@@ -18,12 +20,6 @@ class ApplicationFormDialog extends StatefulWidget {
   _ApplicationFormDialogState createState() => _ApplicationFormDialogState();
 }
 
-enum ResultType {
-  done,
-  error,
-  canceled,
-}
-
 class _ApplicationFormDialogState extends State<ApplicationFormDialog> {
   final _formKey = GlobalKey<FormState>();
   final _fullNameController = TextEditingController();
@@ -35,6 +31,9 @@ class _ApplicationFormDialogState extends State<ApplicationFormDialog> {
   final _skillsController = TextEditingController();
   bool _consentGiven = false;
 
+  String? _emailErrorMessage; // To store error message for email validation
+  FocusNode _emailFocusNode = FocusNode(); // Focus node for email field
+
   final List<String> _educationLevels = [
     '10th Pass',
     '12th Pass',
@@ -43,6 +42,29 @@ class _ApplicationFormDialogState extends State<ApplicationFormDialog> {
     'PhD',
     'Other',
   ];
+
+  @override
+  void initState() {
+    super.initState();
+
+    // Add a listener to the email focus node to detect when the email field loses focus
+    _emailFocusNode.addListener(() {
+      if (!_emailFocusNode.hasFocus) {
+        _validateEmail();
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _fullNameController.dispose();
+    _emailController.dispose();
+    _phoneController.dispose();
+    _workExperienceController.dispose();
+    _skillsController.dispose();
+    _emailFocusNode.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -65,6 +87,8 @@ class _ApplicationFormDialogState extends State<ApplicationFormDialog> {
               _buildTextFormField(
                 controller: _emailController,
                 label: 'Email Address',
+                focusNode: _emailFocusNode, // Attach the focus node to the email field
+                errorMessage: _emailErrorMessage, // Display the error message if any
                 validator: (value) => value == null || value.isEmpty ? 'Please enter your email address' : null,
               ),
               const SizedBox(height: 16),
@@ -143,7 +167,7 @@ class _ApplicationFormDialogState extends State<ApplicationFormDialog> {
           onPressed: () {
             if (_formKey.currentState?.validate() ?? false) {
               if (_consentGiven) {
-                _submitApplication();
+                _checkEmailAndSubmit(); // Validate email before submitting
               } else {
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(content: Text('Please agree to the terms and conditions')),
@@ -163,19 +187,52 @@ class _ApplicationFormDialogState extends State<ApplicationFormDialog> {
     );
   }
 
+  // Check email existence and proceed with submission
+  Future<void> _validateEmail() async {
+    final email = _emailController.text;
+
+    // Access database to check email
+    final user = await DatabaseHelper().getUserByEmail(email);
+
+    setState(() {
+      if (user == null) {
+        _emailErrorMessage = 'Please use a valid application email.';
+      } else {
+        _emailErrorMessage = null;
+      }
+    });
+  }
+
   Widget _buildTextFormField({
     required TextEditingController controller,
     required String label,
+    String? errorMessage, // Error message to be displayed
+    FocusNode? focusNode, // Optional focus node
     String? Function(String?)? validator,
     int maxLines = 1,
   }) {
-    return TextFormField(
-      controller: controller,
-      decoration: InputDecoration(
-        labelText: label,
-      ),
-      validator: validator,
-      maxLines: maxLines,
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        TextFormField(
+          controller: controller,
+          focusNode: focusNode, // Attach the focus node if provided
+          decoration: InputDecoration(
+            labelText: label,
+            errorText: errorMessage, // Display error message if present
+          ),
+          validator: validator,
+          maxLines: maxLines,
+        ),
+        if (errorMessage != null)
+          Padding(
+            padding: const EdgeInsets.only(top: 8.0),
+            child: Text(
+              errorMessage,
+              style: const TextStyle(color: Colors.red),
+            ),
+          ),
+      ],
     );
   }
 
@@ -229,6 +286,23 @@ class _ApplicationFormDialogState extends State<ApplicationFormDialog> {
     );
   }
 
+  void _checkEmailAndSubmit() async {
+    final email = _emailController.text;
+
+    // Access database to check email
+    final user = await DatabaseHelper().getUserByEmail(email);
+
+    if (user == null) {
+      // Email not found, show a message
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please use an application email to submit your application.')),
+      );
+    } else {
+      // Email found, proceed with application submission
+      _submitApplication();
+    }
+  }
+
   void _submitApplication() async {
     final fullName = _fullNameController.text;
     final email = _emailController.text;
@@ -255,7 +329,7 @@ class _ApplicationFormDialogState extends State<ApplicationFormDialog> {
       skills: skills,
       consentGiven: _consentGiven,
       jobProviderEmail: widget.providerEmail,
-      jobTitle: widget.jobTitle, // Updated here
+      jobTitle: widget.jobTitle,
     );
 
     // Insert into the database

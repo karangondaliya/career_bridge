@@ -123,7 +123,7 @@ class _HomePageState extends State<HomePage> {
                 ),
               ),
               _createDrawerItem(icon: Icons.home, text: 'Home', onTap: () {
-                Navigator.pushReplacementNamed(context, '/');
+                Navigator.pushReplacementNamed(context, '', arguments: {'email': widget.userEmail});
               }),
               _createDrawerItem(icon: Icons.work, text: 'Jobs', onTap: () {
                 Navigator.pushNamed(context, '/');
@@ -131,7 +131,7 @@ class _HomePageState extends State<HomePage> {
               _createDrawerItem(icon: Icons.business, text: 'Skill Test', onTap: () {
                 Navigator.pushNamed(context, '/skill_test');
               }),
-              _createDrawerItem(icon: Icons.message, text: 'Message', onTap: () {
+              _createDrawerItem(icon: Icons.message, text: 'Notification', onTap: () {
                 Navigator.pushNamed(context, '/message_view', arguments: widget.userEmail ?? '');
               }),
               _createDrawerItem(icon: Icons.settings, text: 'Settings', onTap: () {

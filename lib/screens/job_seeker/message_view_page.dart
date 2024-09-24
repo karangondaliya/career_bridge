@@ -24,6 +24,19 @@ class _MessageViewPageState extends State<MessageViewPage> {
     return await messageHelper.getMessagesForEmail(email);
   }
 
+  void _deleteMessage(int id) async {
+    final messageHelper = MessageHelper.instance;
+
+    // Delete the message from the database
+    await messageHelper.deleteMessage(id);
+
+    // Refetch messages to update the list
+    setState(() {
+      final String email = ModalRoute.of(context)!.settings.arguments as String;
+      _messages = _fetchMessages(email);
+    });
+  }
+
   void _showMessageDetails(MessageModel message) {
     showDialog(
       context: context,
@@ -128,13 +141,51 @@ class _MessageViewPageState extends State<MessageViewPage> {
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15.0)),
                     child: Padding(
                       padding: const EdgeInsets.all(16.0),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Text('Message: ${message.message}', style: TextStyle(fontWeight: FontWeight.bold)),
-                          SizedBox(height: 8),
-                          Text('Sent by: ${message.fromEmail.isNotEmpty ? message.fromEmail : 'Unknown'}', style: TextStyle(color: Colors.grey)),
-                          Text('Time: ${message.timestamp}', style: TextStyle(color: Colors.grey)),
+                          // Message details
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text('Message: ${message.message}', style: TextStyle(fontWeight: FontWeight.bold)),
+                                SizedBox(height: 8),
+                                Text('Sent by: ${message.fromEmail.isNotEmpty ? message.fromEmail : 'Unknown'}', style: TextStyle(color: Colors.grey)),
+                                Text('Time: ${message.timestamp}', style: TextStyle(color: Colors.grey)),
+                              ],
+                            ),
+                          ),
+                          // Delete button
+                          Container(
+                            decoration: BoxDecoration(
+                              color: Colors.grey.shade200,  // Light background for contrast
+                              borderRadius: BorderRadius.circular(12),  // Rounded corners
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.grey.withOpacity(0.3),
+                                  spreadRadius: 2,
+                                  blurRadius: 5,
+                                  offset: Offset(0, 3),  // Shadow direction
+                                ),
+                              ],
+                            ),
+                            child: IconButton(
+                              icon: Icon(
+                                Icons.delete_forever_rounded,  // Rounded and modern icon
+                                color: Colors.redAccent,
+                                size: 30.0,
+                              ),
+                              onPressed: () {
+                                if (message.id != null) {
+                                  _deleteMessage(message.id!);
+                                } else {
+                                  print('Message ID is null, cannot delete.');
+                                }
+                              },
+                              tooltip: 'Delete message',
+                            ),
+                          ),
                         ],
                       ),
                     ),
@@ -148,3 +199,6 @@ class _MessageViewPageState extends State<MessageViewPage> {
     );
   }
 }
+
+
+

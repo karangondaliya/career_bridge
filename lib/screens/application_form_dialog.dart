@@ -6,6 +6,12 @@ import '../models/job_application.dart';
 import '../utils/database_helper.dart';
 import 'job_provider/job_applications_page.dart'; // Import your DatabaseHelper
 
+
+enum ResultType {
+  done,
+  error,
+  canceled,
+}
 class ApplicationFormDialog extends StatefulWidget {
   final String jobTitle;
   final String providerEmail;

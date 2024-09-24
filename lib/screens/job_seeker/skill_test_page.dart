@@ -17,58 +17,63 @@ class Question {
     required this.questionText,
     required this.options,
     required this.correctAnswer,
-  }) : assert(options.isNotEmpty, 'Options cannot be empty'); // Ensure options is not empty
+  }) : assert(options.isNotEmpty, 'Options cannot be empty'); // Ensure options are not empty
 }
 
-// Sample skill tests with more questions
+// Sample skill tests with aptitude questions
 final List<SkillTest> skillTests = [
   SkillTest(
-    name: 'General Knowledge',
+    name: 'Aptitude Test',
     questions: [
       Question(
-        questionText: 'What is the capital of France?',
-        options: ['Berlin', 'Madrid', 'Paris', 'Rome'],
-        correctAnswer: 'Paris',
+        questionText: 'What is 25% of 200?',
+        options: ['25', '50', '75', '100'],
+        correctAnswer: '50',
       ),
       Question(
-        questionText: 'What is the largest planet in our solar system?',
-        options: ['Earth', 'Jupiter', 'Mars', 'Saturn'],
-        correctAnswer: 'Jupiter',
+        questionText: 'If a train travels 60 km in 1 hour, how far will it travel in 3 hours?',
+        options: ['120 km', '180 km', '240 km', '300 km'],
+        correctAnswer: '180 km',
       ),
       Question(
-        questionText: 'Which element has the chemical symbol Au?',
-        options: ['Gold', 'Silver', 'Iron', 'Lead'],
-        correctAnswer: 'Gold',
+        questionText: 'If the cost of 5 apples is \$10, what is the cost of 8 apples?',
+        options: ['\$12', '\$14', '\$16', '\$18'],
+        correctAnswer: '\$16',
       ),
       Question(
-        questionText: 'Who wrote "To Kill a Mockingbird"?',
-        options: ['Harper Lee', 'Mark Twain', 'Ernest Hemingway', 'F. Scott Fitzgerald'],
-        correctAnswer: 'Harper Lee',
-      ),
-    ],
-  ),
-  SkillTest(
-    name: 'Programming Fundamentals',
-    questions: [
-      Question(
-        questionText: 'What is the time complexity of binary search?',
-        options: ['O(1)', 'O(n)', 'O(log n)', 'O(n^2)'],
-        correctAnswer: 'O(log n)',
+        questionText: 'Which number is the smallest prime number?',
+        options: ['1', '2', '3', '5'],
+        correctAnswer: '2',
       ),
       Question(
-        questionText: 'Which programming language is known as the "mother of all languages"?',
-        options: ['C', 'Java', 'Python', 'Assembly'],
-        correctAnswer: 'C',
+        questionText: 'Find the missing number: 3, 6, 9, 12, ?',
+        options: ['14', '15', '16', '18'],
+        correctAnswer: '15',
       ),
       Question(
-        questionText: 'What does SQL stand for?',
-        options: ['Structured Query Language', 'Sequential Query Language', 'Simple Query Language', 'Standard Query Language'],
-        correctAnswer: 'Structured Query Language',
+        questionText: 'How many sides does a heptagon have?',
+        options: ['5', '6', '7', '8'],
+        correctAnswer: '7',
       ),
       Question(
-        questionText: 'In object-oriented programming, what is the term for the process of hiding implementation details?',
-        options: ['Abstraction', 'Encapsulation', 'Inheritance', 'Polymorphism'],
-        correctAnswer: 'Encapsulation',
+        questionText: 'The average of 5, 10, and 15 is:',
+        options: ['10', '12', '15', '20'],
+        correctAnswer: '10',
+      ),
+      Question(
+        questionText: 'What is the square root of 81?',
+        options: ['7', '8', '9', '10'],
+        correctAnswer: '9',
+      ),
+      Question(
+        questionText: 'If the perimeter of a square is 40 units, what is the length of one side?',
+        options: ['5', '8', '10', '12'],
+        correctAnswer: '10',
+      ),
+      Question(
+        questionText: 'If a bag contains 3 red, 4 blue, and 5 green balls, what is the probability of picking a blue ball?',
+        options: ['1/4', '1/3', '1/2', '2/3'],
+        correctAnswer: '1/3',
       ),
     ],
   ),
@@ -82,13 +87,14 @@ class SkillTestPage extends StatefulWidget {
 class _SkillTestPageState extends State<SkillTestPage> {
   SkillTest? selectedTest;
   Map<int, String?> answers = {};
+  bool showResults = false;
+  List<int> incorrectQuestions = [];
 
   @override
   void initState() {
     super.initState();
-    // Automatically select the first skill test if available
     if (skillTests.isNotEmpty) {
-      selectedTest = skillTests[0];
+      selectedTest = skillTests[0]; // Automatically select the first skill test
     }
   }
 
@@ -96,22 +102,27 @@ class _SkillTestPageState extends State<SkillTestPage> {
     if (selectedTest == null) return;
 
     int score = 0;
+    incorrectQuestions.clear();
+
     for (int i = 0; i < selectedTest!.questions.length; i++) {
       if (answers[i] == selectedTest!.questions[i].correctAnswer) {
         score++;
+      } else {
+        incorrectQuestions.add(i); // Track incorrect answers
       }
     }
 
-    final feedback = score == selectedTest!.questions.length
-        ? 'Excellent! You got all answers right.'
-        : 'Good effort! You got $score out of ${selectedTest!.questions.length} correct.';
+    setState(() {
+      showResults = true; // Trigger UI update to show results
+    });
 
+    // Show feedback in a dialog
     showDialog(
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
           title: Text('Test Results'),
-          content: Text('Score: $score\nFeedback: $feedback'),
+          content: Text('Score: $score/${selectedTest!.questions.length}'),
           actions: [
             TextButton(
               onPressed: () {
@@ -125,12 +136,64 @@ class _SkillTestPageState extends State<SkillTestPage> {
     );
   }
 
+  Widget _buildQuestionCard(int index, Question question) {
+    final options = question.options.isNotEmpty ? question.options : ['No options available'];
+    bool isIncorrect = incorrectQuestions.contains(index);
+
+    return Card(
+      margin: const EdgeInsets.only(bottom: 12.0),
+      elevation: 5,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+      color: isIncorrect ? Colors.red[50] : Colors.white,
+      child: Padding(
+        padding: const EdgeInsets.all(20.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              '${index + 1}. ${question.questionText}',
+              style: TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+                color: Colors.black87,
+              ),
+            ),
+            SizedBox(height: 8),
+            ...options.map((option) {
+              return RadioListTile<String>(
+                title: Text(option),
+                value: option,
+                groupValue: answers[index],
+                onChanged: (value) {
+                  setState(() {
+                    answers[index] = value;
+                  });
+                },
+              );
+            }).toList(),
+            if (showResults && isIncorrect) ...[
+              SizedBox(height: 10),
+              Text(
+                'Correct Answer: ${question.correctAnswer}',
+                style: TextStyle(
+                  color: Colors.green,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 16,
+                ),
+              ),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Skill Test'),
-        backgroundColor: Colors.blueAccent,
+        title: Text('Aptitude Test'),
+        backgroundColor: Colors.deepPurpleAccent,
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -140,7 +203,11 @@ class _SkillTestPageState extends State<SkillTestPage> {
             if (selectedTest != null) ...[
               Text(
                 'Test: ${selectedTest!.name}',
-                style: Theme.of(context).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold),
+                style: TextStyle(
+                  fontSize: 26,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.deepPurpleAccent,
+                ),
               ),
               const SizedBox(height: 16),
               Expanded(
@@ -148,36 +215,7 @@ class _SkillTestPageState extends State<SkillTestPage> {
                   itemCount: selectedTest!.questions.length,
                   itemBuilder: (context, index) {
                     final question = selectedTest!.questions[index];
-                    final options = question.options.isNotEmpty ? question.options : ['No options available'];
-                    return Card(
-                      margin: const EdgeInsets.only(bottom: 8.0),
-                      elevation: 3,
-                      child: Padding(
-                        padding: const EdgeInsets.all(16.0),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              question.questionText,
-                              style: Theme.of(context).textTheme.titleMedium,
-                            ),
-                            SizedBox(height: 8),
-                            ...options.map((option) {
-                              return RadioListTile<String>(
-                                title: Text(option),
-                                value: option,
-                                groupValue: answers[index],
-                                onChanged: (value) {
-                                  setState(() {
-                                    answers[index] = value;
-                                  });
-                                },
-                              );
-                            }).toList(),
-                          ],
-                        ),
-                      ),
-                    );
+                    return _buildQuestionCard(index, question);
                   },
                 ),
               ),
@@ -185,12 +223,12 @@ class _SkillTestPageState extends State<SkillTestPage> {
               Center(
                 child: ElevatedButton(
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.blueAccent,
+                    backgroundColor: Colors.deepPurpleAccent,
                     padding: EdgeInsets.symmetric(horizontal: 32, vertical: 16),
                     textStyle: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                   ),
                   onPressed: _submitTest,
-                  child: Text('Submit'),
+                  child: Text('Submit Test'),
                 ),
               ),
             ] else ...[
@@ -206,8 +244,7 @@ class _SkillTestPageState extends State<SkillTestPage> {
 void main() {
   runApp(MaterialApp(
     theme: ThemeData(
-      primarySwatch: Colors.blue,
-      visualDensity: VisualDensity.adaptivePlatformDensity,
+      primarySwatch: Colors.deepPurple,
       textTheme: TextTheme(
         headlineSmall: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
         titleMedium: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),

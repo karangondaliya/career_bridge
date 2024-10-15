@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <!-- Background Color -->
+    <item android:drawable="@color/splash_background" />
+
+    <!-- Optional Image Asset -->
+    <!-- Uncomment the lines below to use a launch image -->
+    <item>
+        <bitmap
+            android:gravity="center"
+            android:src="@mipmap/launch_image" />
+    </item>
+
+</layer-list>

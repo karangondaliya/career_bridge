@@ -1,0 +1,45 @@
+name: career_bridge
+description: "A new Flutter project."
+
+publish_to: 'none'
+
+version: 1.0.0+1
+
+environment:
+  sdk: '>=3.3.4 <4.1.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+  permission_handler: ^10.2.0
+  intl: ^0.18.0
+  image_picker: ^0.8.5+3
+  audioplayers: ^1.0.0
+  file_picker: ^5.2.0
+  open_file: ^3.2.1
+  url_launcher: ^6.0.20
+  crypto: ^3.0.1
+  sqflite: ^2.0.0+4
+  path: ^1.8.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_launcher_icons: ^0.14.1  # Ensure flutter_launcher_icons is here
+
+# Configuration for the Flutter Launcher Icons package
+flutter_icons:
+  android: true
+  ios: true
+  image_path: "assets/icons/logo.png"  # Path to your app logo
+  adaptive_icon_background: "#ffffff"  # Adaptive background for Android
+  adaptive_icon_foreground: "assets/icons/logo.png"  # Foreground for Android
+
+flutter:
+  uses-material-design: true
+
+  assets:
+    - assets/icons/logo.png
+    - assets/sounds/select_sound.mp3
+    - assets/sounds/fail_music.mp3
+    - assets/sounds/success_music.mp3

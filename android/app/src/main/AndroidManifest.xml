@@ -18,7 +18,8 @@
     <application
         android:requestLegacyExternalStorage="true"
         android:label="career_bridge"
-        android:icon="@mipmap/ic_launcher">
+        android:icon="@mipmap/ic_launcher"
+        android:enableOnBackInvokedCallback="true">
 
         <!-- Main Activity Configuration -->
         <activity

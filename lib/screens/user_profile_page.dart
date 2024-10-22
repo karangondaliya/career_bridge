@@ -5,6 +5,7 @@ import '../models/user.dart';
 import '../models/user_profile_image.dart';
 import '../utils/database_helper.dart';
 import '../utils/profile_image_helper.dart';
+import 'login_page.dart';
 
 class UserProfilePage extends StatefulWidget {
   final String email;
@@ -119,7 +120,48 @@ class _UserProfilePageState extends State<UserProfilePage> {
       }
     }
   }
-
+  Future<void> _deleteUser() async {
+    final dbHelper = DatabaseHelper();
+    try {
+      await dbHelper.deleteUserByEmail(widget.email);
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Profile deleted successfully!')),
+      );
+      // Redirect to login page
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => const LoginPage()),
+      );
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error deleting profile: $e')),
+      );
+    }
+  }
+  void _confirmDeleteUser() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Confirm Delete'),
+        content: const Text('Are you sure you want to delete your profile? This action cannot be undone.'),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.of(context).pop(); // Close the dialog
+            },
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.of(context).pop(); // Close the dialog
+              _deleteUser(); // Call the delete user function
+            },
+            child: const Text('Delete'),
+          ),
+        ],
+      ),
+    );
+  }
   void _showImagePicker(BuildContext context) {
     showModalBottomSheet(
       context: context,
@@ -254,14 +296,12 @@ class _UserProfilePageState extends State<UserProfilePage> {
                 const SizedBox(height: 32),
                 if (!_isEditing)
                   ElevatedButton(
-                    onPressed: () {
-                      // Logic to delete the profile
-                    },
+                    onPressed: _confirmDeleteUser, // Call confirm delete
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.red,
                       padding: const EdgeInsets.symmetric(vertical: 16.0),
                     ),
-                    child: const Text('Delete Profile'),
+                    child: const Text('Delete Account'),
                   ),
               ],
             ),

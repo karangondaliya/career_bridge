@@ -117,13 +117,6 @@ class _AdminPageState extends State<AdminPage> {
         onTap: _onItemTapped,
         selectedItemColor: Colors.lightBlueAccent,
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          // Action for adding feedback or job postings
-        },
-        tooltip: 'Add',
-        child: const Icon(Icons.add),
-      ),
     );
   }
 
@@ -322,6 +315,9 @@ class _AdminPageState extends State<AdminPage> {
     );
   }
 
+
+
+
   Widget _buildJobPostingList() {
     return FutureBuilder<List<JobPosting>>(
       future: _jobPostingList,
@@ -334,17 +330,13 @@ class _AdminPageState extends State<AdminPage> {
           return _buildEmptyState('No job postings available.');
         } else {
           final jobPostings = snapshot.data!;
-          return GridView.builder(
+          return ListView.builder(
             physics: const NeverScrollableScrollPhysics(),
             shrinkWrap: true,
-            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 1,
-              childAspectRatio: 1.5,
-            ),
             itemCount: jobPostings.length,
             itemBuilder: (context, index) {
-              final posting = jobPostings[index];
-              return _buildJobPostingCard(posting);
+              final jobPosting = jobPostings[index];
+              return _buildJobPostingItem(jobPosting);
             },
           );
         }
@@ -352,85 +344,83 @@ class _AdminPageState extends State<AdminPage> {
     );
   }
 
-  Widget _buildJobPostingCard(JobPosting posting) {
-    return Card(
-      color: Colors.white,
+  Widget _buildJobPostingItem(JobPosting posting) {
+    return Container(
+      padding: const EdgeInsets.all(16.0),
       margin: const EdgeInsets.symmetric(vertical: 10, horizontal: 15),
-      elevation: 10,
-      shape: RoundedRectangleBorder(
+      decoration: BoxDecoration(
+        color: Colors.white,
         borderRadius: BorderRadius.circular(15),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.lightBlueAccent.withOpacity(0.5),
+            blurRadius: 10,
+            offset: const Offset(0, 2),
+          ),
+        ],
       ),
-      shadowColor: Colors.lightBlueAccent.withOpacity(0.5),
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              posting.jobTitle,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            posting.jobTitle,
+            style: const TextStyle(
+              fontWeight: FontWeight.bold,
+              fontSize: 26,
+              color: Colors.black87,
+            ),
+          ),
+          const SizedBox(height: 10),
+          Text(
+            posting.jobDescription,
+            style: const TextStyle(
+              color: Colors.black54,
+              fontSize: 22,
+            ),
+          ),
+          const SizedBox(height: 10),
+          Text(
+            'Requirements: ${posting.requirements}',
+            style: const TextStyle(
+              color: Colors.black54,
+              fontSize: 22,
+            ),
+          ),
+          const SizedBox(height: 10),
+          Text(
+            'Salary: ${posting.salary}',
+            style: const TextStyle(
+              color: Colors.black54,
+              fontSize: 22,
+            ),
+          ),
+          const SizedBox(height: 10),
+          Align(
+            alignment: Alignment.bottomRight,
+            child: Text(
+              'Posted on: ${posting.datePosted}\nProvider: ${posting.providerEmail}',
               style: const TextStyle(
-                fontWeight: FontWeight.bold,
-                fontSize: 24,
-                color: Colors.black87,
+                color: Colors.grey,
+                fontSize: 18,
               ),
             ),
-            const SizedBox(height: 8),
-            Text(
-              posting.jobDescription,
-              style: const TextStyle(
-                color: Colors.black54,
-                fontSize: 20,
-              ),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              'Requirements: ${posting.requirements}',
-              style: const TextStyle(
-                color: Colors.black54,
-                fontSize: 20,
-              ),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              'Salary: ${posting.salary}',
-              style: const TextStyle(
-                color: Colors.black54,
-                fontSize: 20,
-              ),
-            ),
-            const SizedBox(height: 8),
-            Align(
-              alignment: Alignment.bottomRight,
-              child: Text(
-                'Posted on: ${posting.datePosted}\nProvider: ${posting.providerEmail}',
-                style: const TextStyle(
-                  color: Colors.grey,
-                  fontSize: 16,
-                ),
-              ),
-            ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
-
   Widget _buildLoadingPlaceholder() {
-    return const Center(child: CircularProgressIndicator());
+    return Center(child: CircularProgressIndicator());
   }
 
   Widget _buildEmptyState(String message) {
     return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          const Icon(Icons.sentiment_dissatisfied, size: 80, color: Colors.grey),
-          const SizedBox(height: 20),
-          Text(
-            message,
-            style: const TextStyle(fontSize: 18, color: Colors.grey),
-          ),
-        ],
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Text(
+          message,
+          style: const TextStyle(fontSize: 20, color: Colors.black54),
+        ),
       ),
     );
   }

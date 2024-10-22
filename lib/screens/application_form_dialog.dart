@@ -169,6 +169,13 @@ class _ApplicationFormDialogState extends State<ApplicationFormDialog> {
         ),
       ),
       actions: [
+
+        ElevatedButton(
+          onPressed: () {
+            Navigator.of(context).pop();
+          },
+          child: const Text('Cancel'),
+        ),
         ElevatedButton(
           onPressed: () {
             if (_formKey.currentState?.validate() ?? false) {
@@ -183,12 +190,7 @@ class _ApplicationFormDialogState extends State<ApplicationFormDialog> {
           },
           child: const Text('Submit'),
         ),
-        ElevatedButton(
-          onPressed: () {
-            Navigator.of(context).pop();
-          },
-          child: const Text('Cancel'),
-        ),
+
       ],
     );
   }
